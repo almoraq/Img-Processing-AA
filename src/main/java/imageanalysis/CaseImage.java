@@ -14,6 +14,21 @@ public class CaseImage {
     int height;
     BufferedImage image;
 
+    public static void main(String args[])throws IOException 
+    { 
+        String inputFileName = "Images/squirtle.jpg";
+        CaseImage currImage = new CaseImage();
+        currImage.setupImage(inputFileName);
+        int targetPixelsTested = 6;
+        int pWidth = currImage.getWidth()-1;
+        int pHeight = currImage.getHeight()-1;
+        int imageSectionAmount = 1024/8;
+        int pWidthDif = pWidth-imageSectionAmount;
+        int pHeightDif = pWidth-imageSectionAmount;
+        currImage.testPixelsArea(pWidth-pWidthDif, pWidth,pHeight-pHeightDif, pHeight, currImage, targetPixelsTested);
+        
+    }//main() ends here 
+    
     public void setupImage(String pFileName){
         // READ IMAGE 
         try
@@ -46,30 +61,23 @@ public class CaseImage {
         pixelValuesArray.add(3, blueValue);
         return pixelValuesArray;
     }
-            
-    public static void main(String args[])throws IOException 
-    { 
-        String inputFileName = "Images/vacationMario.jpg";
-        CaseImage currImage = new CaseImage();
-        currImage.setupImage(inputFileName);
-        int targetPixelsTested = 6;
-        int pWidth = currImage.getWidth()-1;
-        int pHeight = currImage.getHeight()-1;
-        for(int pixelsTested = 0; pixelsTested<targetPixelsTested; pixelsTested++){
-            ArrayList<Integer> pixelValues = currImage.obtainPixelValues(pWidth, pHeight, currImage.getImage());
+    
+    public void testPixelsArea(int pWidthMin, int pWidthMax, int pHeightMin, int pHeightMax, CaseImage pCaseImage, int pTotalTests){
+        for(int pixelsTested = 0; pixelsTested<pTotalTests; pixelsTested++){
+            int pixelX = pWidthMin + (int)(Math.random() * ((pWidthMax - pWidthMin) + 1));
+            int pixelY = pHeightMin + (int)(Math.random() * ((pHeightMax - pHeightMin) + 1));
+            ArrayList<Integer> pixelValues = pCaseImage.obtainPixelValues(pixelX, pixelY, pCaseImage.getImage());
             int alphaValue = pixelValues.get(0);
             int redValue = pixelValues.get(1);
             int greenValue = pixelValues.get(2);
             int blueValue = pixelValues.get(3);
-            System.out.println("Pixel RBG for x="+(pWidth)+" and y="+(pHeight)+":\nAlpha: "+alphaValue+
+            System.out.println("Pixel RBG for x="+(pixelX)+" and y="+(pixelY)+":\nAlpha: "+alphaValue+
                                         "\nRed: "+redValue+"\nGreen: "+greenValue+"\nBlue: "+blueValue);
             if(alphaValue == 255 && redValue == 255 && greenValue == 255 && blueValue == 255){
                 System.out.println("This is a white pixel!");
             }
-            pWidth = pWidth/2;
-            pHeight = pHeight/2;
         }
-    }//main() ends here 
+    }
     
     public BufferedImage getImage() {
         return image;

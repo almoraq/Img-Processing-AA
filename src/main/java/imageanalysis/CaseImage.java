@@ -16,6 +16,7 @@ public class CaseImage {
     BufferedImage image;
     int arrayLength = 8;
     ArrayList<Integer>[] pixelValuesMatrix = new ArrayList[arrayLength];
+    ArrayList<Double>[] imageMetadataMatrix = new ArrayList[arrayLength];
     boolean areaIsWhite = false;
     int minX = 0;
     int minY = 0;
@@ -92,17 +93,17 @@ public class CaseImage {
     public void obtainMaxMinCoord(ArrayList<Integer>[] pPixelValuesMatrix){
         for(int rows = 0; rows < pPixelValuesMatrix.length; rows++){
             //Fin the highest and lowest x,y coordinates to "crop" the image and get the final dimensions
-            if(pPixelValuesMatrix[rows].get(0) < minX){//finding lowest X in the matrix
-                minX = pPixelValuesMatrix[rows].get(0);
+            if(pPixelValuesMatrix[rows].get(0) < this.minX){//finding lowest X in the matrix
+                this.minX = pPixelValuesMatrix[rows].get(0);
             }
-            if(pPixelValuesMatrix[rows].get(1) > maxX){//finding highest X
-                maxX = pPixelValuesMatrix[rows].get(1);
+            if(pPixelValuesMatrix[rows].get(1) > this.maxX){//finding highest X
+                this.maxX = pPixelValuesMatrix[rows].get(1);
             }
-            if(pPixelValuesMatrix[rows].get(2) > minY){//finding lowest Y
-                minY = pPixelValuesMatrix[rows].get(2);
+            if(pPixelValuesMatrix[rows].get(2) > this.minY){//finding lowest Y
+                this.minY = pPixelValuesMatrix[rows].get(2);
             }
-            if(pPixelValuesMatrix[rows].get(3) > maxY){//finding highest Y
-                maxY = pPixelValuesMatrix[rows].get(3);
+            if(pPixelValuesMatrix[rows].get(3) > this.maxY){//finding highest Y
+                this.maxY = pPixelValuesMatrix[rows].get(3);
             }
         }
     }
@@ -159,6 +160,68 @@ public class CaseImage {
         pPixelValuesMatrix[testsPerformed].add(7, pTestedPixels);  
     }
     
+    public void obtainImageMatadata(){
+        //Fills matrix with pixel color values from different sections, modifies them in order of priority (for easier evaluation by the user
+        //and modifies the metadata matrix with those values and their correspondent percentage of occurrence in the image
+        //No coordinates are saved in this matrix, only color values and their occurrence
+        /*
+        Matrix:
+        Red | Green | Blue | Occurrence
+        200 |  152  |  55  |   0.32 
+        */
+        //1. Read the pixel values matrix and add each new value into the image metadata matrix.
+        //  If color is repeated, add 1 to the occurrence counter for the matrix, which will later transform into a percentage after the
+        //  pixelValuesMatrix is finished being analyzed.
+        //2. "Normalize" the values, by grouping similar colors together (color variance of +-5 in any of its RGB values
+        //3. Rearrange the metadata matrix by the highest to lowest color occurrence
+        //  This will also be useful later, to create the genetic pool with those values
+        int matrixRows = 0;
+        for(int rows = 0; rows < this.pixelValuesMatrix.length; rows++){
+            int redValue = this.pixelValuesMatrix[rows].get(0);
+            int greenValue = this.pixelValuesMatrix[rows].get(1);
+            int blueValue = this.pixelValuesMatrix[rows].get(2);
+            int foundMatrixIndex = compareMatrixRGB(redValue, greenValue, blueValue);
+            //if entry's values are not already in the matrix, add to the structure in the corresponding index (matrixRows) and add 1 to the occurrence
+            //check if element is in metadata already
+            if(foundMatrixIndex != 0){
+                this.imageMetadataMatrix[foundMatrixIndex].set(0, ((double) redValue)); //Setting the red value
+                this.imageMetadataMatrix[foundMatrixIndex].set(1, ((double) greenValue)); //Setting the green value
+                this.imageMetadataMatrix[foundMatrixIndex].set(2, ((double) blueValue)); //Setting the blue value
+                this.imageMetadataMatrix[foundMatrixIndex].set(3, this.imageMetadataMatrix[matrixRows].get(3)+1); //Adding 1 to the occurrence
+            }
+            //else, add 1 to the ocurrence but in the row of the element in the metadata matrix
+            else{
+               this.imageMetadataMatrix[matrixRows].set(3, this.imageMetadataMatrix[matrixRows].get(3)+1); //Adding 1 to the occurrence 
+               matrixRows++;
+            }
+            //call to function to update occurrence values
+            updateOcurrenceValues(matrixRows);
+            
+            //call to function to rearrange matrix in decreasing occurrence order
+        }
+    }
+    
+    public int compareMatrixRGB(int pRed, int pGreen, int pBlue){
+        //rearranges matrix elements in decreasing order by occurence value
+        for(int rows = 0; rows < this.imageMetadataMatrix.length; rows++){
+            if(this.imageMetadataMatrix[rows].get(0) <= pRed+3 && this.imageMetadataMatrix[rows].get(0) >= pRed-3){
+                if(this.imageMetadataMatrix[rows].get(0) <= pGreen+3 && this.imageMetadataMatrix[rows].get(0) >= pGreen-3){
+                    if(this.imageMetadataMatrix[rows].get(0) <= pBlue+3 && this.imageMetadataMatrix[rows].get(0) >= pBlue-3){
+                        return rows;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+    
+    public void updateOcurrenceValues(int pMatrixRows){
+        for(int rows = 0; rows < pMatrixRows; rows++){
+            this.imageMetadataMatrix[rows].set(3, this.imageMetadataMatrix[rows].get(3)/pMatrixRows);
+        }
+    }
+    
+    
     public BufferedImage getImage() {
         return image;
     }
@@ -203,6 +266,14 @@ public class CaseImage {
 
     public void setAreaIsWhite(boolean areaIsWhite) {
         this.areaIsWhite = areaIsWhite;
+    }
+    
+    public ArrayList<Double>[] getImageMetadataMatrix() {
+        return imageMetadataMatrix;
+    }
+
+    public void setImageMetadataMatrix(ArrayList<Double>[] imageMetadataMatrix) {
+        this.imageMetadataMatrix = imageMetadataMatrix;
     }
 
 }//class ends here

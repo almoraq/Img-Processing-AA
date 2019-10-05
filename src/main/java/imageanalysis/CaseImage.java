@@ -15,7 +15,9 @@ public class CaseImage {
     BufferedImage image;
     int arrayLength = 8;
     ArrayList<Integer>[] pixelValuesMatrix = new ArrayList[arrayLength];
+    boolean areaIsWhite = false;
 
+    
     
     
     public static void main(String args[])throws IOException 
@@ -48,6 +50,7 @@ public class CaseImage {
         BufferedImage currImageData = pImage;
         int pixelValue = currImageData.getRGB(pWidth, pHeight);
         ArrayList<Integer> pixelValuesArray = new ArrayList<Integer>(arraySize);
+        
         int alphaValue = (pixelValue>>24) & 0xff;
         int redValue = (pixelValue>>16) & 0xff;
         int greenValue = (pixelValue>>8) & 0xff;
@@ -56,6 +59,7 @@ public class CaseImage {
         pixelValuesArray.add(1, redValue);
         pixelValuesArray.add(2, greenValue);
         pixelValuesArray.add(3, blueValue);
+        
         return pixelValuesArray;
     }
     
@@ -66,12 +70,21 @@ public class CaseImage {
             
             ArrayList<Integer> pixelValues = pCaseImage.obtainPixelValues(pixelX, pixelY, pCaseImage.getImage());
             pCaseImage.registerPixelValues(pixelValuesMatrix, pixelValues, pixelsTested);
-            
-            pixelValuesMatrix[pixelsTested].add(0, pXCoord);
-            pixelValuesMatrix[pixelsTested].add(1, pYCoord);
-            pixelValuesMatrix[pixelsTested].add(2, pXCoordMax);
-            pixelValuesMatrix[pixelsTested].add(3, pYCoordMax);
+            if(this.isAreaIsWhite()){
+                this.removeArea(pXCoord, pXCoordMax, pYCoord, pYCoordMax, pCaseImage);
+                this.setAreaIsWhite(false);
+            }
+            else{
+                pixelValuesMatrix[pixelsTested].add(0, pXCoord);
+                pixelValuesMatrix[pixelsTested].add(1, pYCoord);
+                pixelValuesMatrix[pixelsTested].add(2, pXCoordMax);
+                pixelValuesMatrix[pixelsTested].add(3, pYCoordMax);
+            }
         }
+    }
+    
+    public void removeArea(int pXCoord, int pXCoordMax, int pYCoord, int pYCoordMax, CaseImage pCaseImage){
+        System.out.println("This is where an area will be cropped if things could go my way");
     }
     
     public void registerPixelValues(ArrayList<Integer>[] pPixelValuesMatrix, ArrayList<Integer> pPixelValues,int pTestedPixels){
@@ -99,6 +112,10 @@ public class CaseImage {
                 avgBlueValue = pPixelValues.get(3);
             }
         }
+        if(whitePixelsTested == testsPerformed++){
+            System.out.println("Lol this whole area is whiter than Ann Coulter's fanbase");
+            this.setAreaIsWhite(true);
+        }
         //avgAlphaValue = avgAlphaValue/(pTestedPixels-whitePixelsTested);
         avgRedValue = avgRedValue/(pTestedPixels-whitePixelsTested);
         avgGreenValue = avgGreenValue/(pTestedPixels-whitePixelsTested);
@@ -107,8 +124,7 @@ public class CaseImage {
         pPixelValuesMatrix[testsPerformed].add(4, avgRedValue);
         pPixelValuesMatrix[testsPerformed].add(5, avgGreenValue);
         pPixelValuesMatrix[testsPerformed].add(6, avgBlueValue);
-        pPixelValuesMatrix[testsPerformed].add(7, pTestedPixels);
-        
+        pPixelValuesMatrix[testsPerformed].add(7, pTestedPixels);  
     }
     
     public BufferedImage getImage() {
@@ -149,5 +165,13 @@ public class CaseImage {
     public void setPixelValuesMatrix(ArrayList<Integer>[] pixelValuesMatrix) {
         this.pixelValuesMatrix = pixelValuesMatrix;
     }
+    public boolean isAreaIsWhite() {
+        return areaIsWhite;
+    }
+
+    public void setAreaIsWhite(boolean areaIsWhite) {
+        this.areaIsWhite = areaIsWhite;
+    }
+
 }//class ends here
 

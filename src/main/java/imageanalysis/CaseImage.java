@@ -13,21 +13,18 @@ public class CaseImage {
     int width;
     int height;
     BufferedImage image;
+    int arrayLength = 8;
+    ArrayList<Integer>[] pixelValuesMatrix = new ArrayList[arrayLength];
 
+    
+    
     public static void main(String args[])throws IOException 
     { 
-        String inputFileName = "Images/squirtle.jpg";
-        CaseImage currImage = new CaseImage();
-        currImage.setupImage(inputFileName);
-        int targetPixelsTested = 6;
-        int pWidth = currImage.getWidth()-1;
-        int pHeight = currImage.getHeight()-1;
-        int imageSectionAmount = 1024/8;
-        int pWidthDif = pWidth-imageSectionAmount;
-        int pHeightDif = pWidth-imageSectionAmount;
-        currImage.testPixelsArea(pWidth-pWidthDif, pWidth,pHeight-pHeightDif, pHeight, currImage, targetPixelsTested);
+        
         
     }//main() ends here 
+    
+    
     
     public void setupImage(String pFileName){
         // READ IMAGE 
@@ -62,21 +59,56 @@ public class CaseImage {
         return pixelValuesArray;
     }
     
-    public void testPixelsArea(int pWidthMin, int pWidthMax, int pHeightMin, int pHeightMax, CaseImage pCaseImage, int pTotalTests){
+    public void testPixelsArea(int pXCoord, int pXCoordMax, int pYCoord, int pYCoordMax, CaseImage pCaseImage, int pTotalTests){
         for(int pixelsTested = 0; pixelsTested<pTotalTests; pixelsTested++){
-            int pixelX = pWidthMin + (int)(Math.random() * ((pWidthMax - pWidthMin) + 1));
-            int pixelY = pHeightMin + (int)(Math.random() * ((pHeightMax - pHeightMin) + 1));
+            int pixelX = pXCoord + (int)(Math.random() * ((pXCoordMax - pXCoord) + 1));
+            int pixelY = pYCoord + (int)(Math.random() * ((pYCoordMax - pYCoord) + 1));
+            
             ArrayList<Integer> pixelValues = pCaseImage.obtainPixelValues(pixelX, pixelY, pCaseImage.getImage());
-            int alphaValue = pixelValues.get(0);
-            int redValue = pixelValues.get(1);
-            int greenValue = pixelValues.get(2);
-            int blueValue = pixelValues.get(3);
-            System.out.println("Pixel RBG for x="+(pixelX)+" and y="+(pixelY)+":\nAlpha: "+alphaValue+
-                                        "\nRed: "+redValue+"\nGreen: "+greenValue+"\nBlue: "+blueValue);
-            if(alphaValue == 255 && redValue == 255 && greenValue == 255 && blueValue == 255){
+            pCaseImage.registerPixelValues(pixelValuesMatrix, pixelValues, pixelsTested);
+            
+            pixelValuesMatrix[pixelsTested].add(0, pXCoord);
+            pixelValuesMatrix[pixelsTested].add(1, pYCoord);
+            pixelValuesMatrix[pixelsTested].add(2, pXCoordMax);
+            pixelValuesMatrix[pixelsTested].add(3, pYCoordMax);
+        }
+    }
+    
+    public void registerPixelValues(ArrayList<Integer>[] pPixelValuesMatrix, ArrayList<Integer> pPixelValues,int pTestedPixels){
+        /*
+        Starting x,y | Ending x,y | Total Red | Total Green | Total Blue | Pixels Tested
+        0,0 | 127,127 | Sum of red in tested pixels | " green | " blue " | number of tests
+        */
+        int whitePixelsTested = 0;
+        //int avgAlphaValue = 0;
+        int avgRedValue = 0;
+        int avgGreenValue = 0;
+        int avgBlueValue = 0;
+        int testsPerformed;
+        
+        for (testsPerformed = 0; testsPerformed < pTestedPixels; testsPerformed++){
+            System.out.println("Pixel RBG:\nRed: "+pPixelValues.get(1)+"\nGreen: "+pPixelValues.get(2)+"\nBlue: "+pPixelValues.get(3));
+            if(pPixelValues.get(0) == 255 && pPixelValues.get(1) == 255 && pPixelValues.get(2) == 255 && pPixelValues.get(3) == 255){
                 System.out.println("This is a white pixel!");
+                whitePixelsTested++;
+            }
+            else{
+                //avgAlphaValue += pPixelValues.get(0);
+                avgRedValue += pPixelValues.get(1);
+                avgGreenValue += pPixelValues.get(2);
+                avgBlueValue = pPixelValues.get(3);
             }
         }
+        //avgAlphaValue = avgAlphaValue/(pTestedPixels-whitePixelsTested);
+        avgRedValue = avgRedValue/(pTestedPixels-whitePixelsTested);
+        avgGreenValue = avgGreenValue/(pTestedPixels-whitePixelsTested);
+        avgBlueValue = avgBlueValue/(pTestedPixels-whitePixelsTested);
+        
+        pPixelValuesMatrix[testsPerformed].add(4, avgRedValue);
+        pPixelValuesMatrix[testsPerformed].add(5, avgGreenValue);
+        pPixelValuesMatrix[testsPerformed].add(6, avgBlueValue);
+        pPixelValuesMatrix[testsPerformed].add(7, pTestedPixels);
+        
     }
     
     public BufferedImage getImage() {
@@ -101,6 +133,21 @@ public class CaseImage {
 
     public int getHeight() {
         return height;
+    }
+    public int getArrayLength() {
+        return arrayLength;
+    }
+
+    public void setArrayLength(int arrayLength) {
+        this.arrayLength = arrayLength;
+    }
+
+    public ArrayList<Integer>[] getPixelValuesMatrix() {
+        return pixelValuesMatrix;
+    }
+
+    public void setPixelValuesMatrix(ArrayList<Integer>[] pixelValuesMatrix) {
+        this.pixelValuesMatrix = pixelValuesMatrix;
     }
 }//class ends here
 

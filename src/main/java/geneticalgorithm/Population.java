@@ -20,6 +20,7 @@ public class Population {
     double popGrowthFact = 1;
     int generations = 0;
     double populationFitness = 0;
+    double mutationRate = 0.01;
     CaseImage image = new CaseImage();
     ArrayList<Double>[] metadataMatrix = image.getImageMetadataMatrix();
     
@@ -87,11 +88,21 @@ public class Population {
                 //set child's genes
                 child.colorValueBytes[genesMixed] = parent1.colorValueBytes[genesMixed] & parent2.colorValueBytes[genesMixed];
             }
+            mutateGenes(child);
             this.population = polygonsCreated;
         }
         this.generations++;
         
         
+    }
+    
+    private void mutateGenes(PolygonDNA pPolygonChild){
+        int mutatingGenome = 15;
+        double randomDouble = Math.random();
+        if(randomDouble <= this.mutationRate){
+            int randomIndex = (int) Math.round(Math.random()*3);
+            pPolygonChild.colorValueBytes[randomIndex] = pPolygonChild.colorValueBytes[randomIndex]^mutatingGenome;
+        }
     }
     
     private void evaluatePopulation(){

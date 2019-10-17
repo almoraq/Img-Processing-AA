@@ -6,6 +6,7 @@
 package caseoperations;
 
 import imageanalysis.CaseImage;
+import java.util.ArrayList;
 
 /**
  *
@@ -17,6 +18,7 @@ public class main {
         int coordDivisions = 4;
         CaseImage testedImage = new CaseImage(inputFile, coordDivisions);
         testedImage.performTests();
+        //testedImage.setImageMetadataMatrix(imageMetadataMatrix);
         testedImage.printMatrix(testedImage.getImageMetadataMatrix());
     }
 }

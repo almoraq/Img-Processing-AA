@@ -20,10 +20,10 @@ public class CaseImage {
     BufferedImage imageCopy;
     String inputFile;
     int width, height;
-    int targetTests = (this.width*this.height)/10;
+    int targetTests = 15;
     int totalCoordDivisions;
     ArrayList<Integer[]> imageMetadataMatrix = new ArrayList<>();
-    int totalSections = (int) Math.pow((double)this.totalCoordDivisions, 2.00);
+    int totalSections;
     int sectionXDistance;
     int sectionYDistance;
     Integer[] highestLeftestCoord = {0,0};
@@ -32,26 +32,38 @@ public class CaseImage {
     public CaseImage(String pInputFile, int pTotalCoordDivisions){
         this.inputFile = pInputFile;
         this.totalCoordDivisions = pTotalCoordDivisions;
-        
+        this.totalSections = totalCoordDivisions*totalCoordDivisions;
+        //this.targetTests = (this.width*this.height)/10;
+        System.out.println("Target tests: "+this.targetTests);
     }
 
     public void performTests(){
         this.setupImage();
+        System.out.println("Image setup finalized.");
         int minX = 0;
         int minY = 0;
         int maxX = minX + this.sectionXDistance;
         int maxY = minY + this.sectionYDistance;
-        int subsections = (int)Math.sqrt(this.totalSections);
         
+        int subsections = (int) Math.sqrt(this.totalSections);
+        //System.out.println("Total subsections: "+subsections);
         for(int imageRows = 0; imageRows < subsections; imageRows++){
+            //System.out.println("Miny for row "+imageRows+": "+minY);
             for(int imageColumns = 0; imageColumns < subsections; imageColumns++){
-                ImageSection currSection = new ImageSection(minX, minY, maxX, maxY, this.targetTests, this.image, this.imageCopy);
-                currSection.testPixelsArea();
-                this.addImageMetadata(currSection.getPixelValuesMatrix());
-                minX += this.sectionXDistance;
+                if(minY <= (this.height-this.sectionYDistance) && minX <= (this.width-this.sectionXDistance) && maxX < this.width+1){
+                    System.out.println("Testing in coordinates: x1,y1: "+minX+","+minY+" x2,y2: "+maxX+","+maxY);
+                    ImageSection currSection = new ImageSection(minX, minY, maxX, maxY, this.targetTests, this.image, this.imageCopy);
+                    
+                    currSection.testPixelsArea();
+                    this.addImageMetadata(currSection.getPixelValuesMatrix());
+                    minX += this.sectionXDistance;
+                    maxX += this.sectionXDistance;
+                }
             }
-            minX = 0;
             minY += this.sectionYDistance;
+            maxY += this.sectionYDistance;
+            minX = 0;
+            maxX = minX + this.sectionXDistance;
         }
         this.updateMetadataMatrix();
     }

@@ -58,7 +58,7 @@ public class ImageSection {
                 randomNum = ThreadLocalRandom.current().nextInt(this.anchor[1]-this.yRange, this.anchor[1]+this.yRange + 1);
             }
             int pixelY = Math.abs(randomNum);
-
+            System.out.println("Testing pixel x,y:" +pixelX+","+pixelY);
             //Obtaining and saving the RGB values of the tested pixels. Values are stored inside the matrix
             //If pixel is white, values are not stored.
             this.fullImageCopy.setRGB(pixelX, pixelY, 000000);
@@ -83,8 +83,8 @@ public class ImageSection {
         int redValue = (pixelValue>>16) & 0xff;
         int greenValue = (pixelValue>>8) & 0xff;
         int blueValue = (pixelValue) & 0xff;
-        
         if(!(alphaValue == 255 && redValue == 255 && greenValue == 255 && blueValue == 255)){
+            System.out.println("Colored pixel values: "+alphaValue+", "+redValue+", "+greenValue+", "+blueValue);
             //Pixel is not white, the values are added to the class matrix
             //Check if values are already in the matrix. If they are, occurrence is increased
             this.pixelValuesArray[0] = alphaValue;
@@ -95,6 +95,7 @@ public class ImageSection {
                 this.sectionValuesMatrix.add(this.pixelValuesArray);
             }
             else{
+                
                 //adding 1 to the occurrence of this color
                 this.pixelValuesArray[4] +=1;
             }
@@ -104,6 +105,7 @@ public class ImageSection {
         }
         else{
             this.whitePixels += 1;
+            System.out.println("White pixel found.");
         }
         
     }

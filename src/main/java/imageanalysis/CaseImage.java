@@ -40,7 +40,11 @@ public class CaseImage {
         int imageSectionAmount = 1024/8;
         int pWidthDif = pWidth-imageSectionAmount;
         int pHeightDif = pWidth-imageSectionAmount;
-        image.testPixelsArea(340, 490, 0, 150, image, targetPixelsTested);
+        int xCoord = 200;
+        int maxXCoord = xCoord+150;
+        int yCoord = 300;
+        int maxYCoord = yCoord+150;
+        image.testPixelsArea(xCoord, maxXCoord, yCoord, maxYCoord, image, targetPixelsTested);
         ArrayList<Integer[]> pixelMatrix = image.getPixelValuesMatrix();
         System.out.println("Pixel values:\nRed|Green|Blue| X1 | X2 | Y1 | Y2 ");
         for(int rows = 0; rows<pixelMatrix.size(); rows++){
@@ -390,4 +394,3 @@ public class CaseImage {
     
 
 }//class ends here
-

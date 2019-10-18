@@ -21,8 +21,9 @@ public class Population {
     int generations = 0;
     double populationFitness = 0;
     double mutationRate = 0.01;
-    CaseImage image = new CaseImage();
-    ArrayList<Double>[] metadataMatrix = image.getImageMetadataMatrix();
+    //CaseImage image = new CaseImage();
+    ArrayList<Double>[] metadataMatrix;
+    //= image.getImageMetadataMatrix();
     
     private void generatePolygonArray(){
         for(int polygonsAdded = 0; polygonsAdded < this.getPolygonArraySize(); polygonsAdded++){

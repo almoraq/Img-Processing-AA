@@ -20,64 +20,91 @@ public class CaseImage {
     BufferedImage imageCopy;
     String inputFile;
     int width, height;
-    int targetTests = (this.width*this.height)/10;
+    int targetTests = 60;
     int totalCoordDivisions;
+    ArrayList<PixelData> pixelMetadataArray = new ArrayList<>();
     ArrayList<Integer[]> imageMetadataMatrix = new ArrayList<>();
-    int totalSections = (int) Math.pow((double)this.totalCoordDivisions, 2.00);
+    int totalSections;
     int sectionXDistance;
     int sectionYDistance;
     Integer[] highestLeftestCoord = {0,0};
     Integer[] lowestRightestCoord = {0,0};
+    int totalColoredPixels = 0;
+    int totalWhitePixels = 0;
     
     public CaseImage(String pInputFile, int pTotalCoordDivisions){
         this.inputFile = pInputFile;
         this.totalCoordDivisions = pTotalCoordDivisions;
-        
+        this.totalSections = totalCoordDivisions*totalCoordDivisions;
+        //this.targetTests = (this.width*this.height)/10;
+        System.out.println("Target tests: "+this.targetTests);
     }
 
     public void performTests(){
         this.setupImage();
+        System.out.println("Image setup finalized.");
         int minX = 0;
         int minY = 0;
         int maxX = minX + this.sectionXDistance;
         int maxY = minY + this.sectionYDistance;
-        int subsections = (int)Math.sqrt(this.totalSections);
         
+        int subsections = (int) Math.sqrt(this.totalSections);
+        //System.out.println("Total subsections: "+subsections);
         for(int imageRows = 0; imageRows < subsections; imageRows++){
+            //System.out.println("Miny for row "+imageRows+": "+minY);
             for(int imageColumns = 0; imageColumns < subsections; imageColumns++){
-                ImageSection currSection = new ImageSection(minX, minY, maxX, maxY, this.targetTests, this.image, this.imageCopy);
-                currSection.testPixelsArea();
-                this.addImageMetadata(currSection.getPixelValuesMatrix());
-                minX += this.sectionXDistance;
+                if(minY <= (this.height-this.sectionYDistance) && minX <= (this.width-this.sectionXDistance) && maxX < this.width+1){
+                    System.out.println("Testing in coordinates:\n x  ,  y\n"+minX+" , "+minY+"\n"+maxX+" , "+maxY);
+                    ImageSection currSection = new ImageSection(minX, minY, maxX, maxY, this.targetTests, this.image, this.imageCopy);
+                    
+                    currSection.testPixelsArea();
+                    this.addImageMetadata(currSection.getPixelValuesArray());
+                    this.totalColoredPixels+=currSection.getColoredPixels();
+                    this.totalWhitePixels+=currSection.getWhitePixels();
+                    minX += this.sectionXDistance;
+                    maxX += this.sectionXDistance;
+                    currSection.anchor[0]+=this.sectionXDistance;
+                    currSection.anchor[1]+=this.sectionYDistance;
+                }
             }
-            minX = 0;
             minY += this.sectionYDistance;
+            maxY += this.sectionYDistance;
+            minX = 0;
+            maxX = minX + this.sectionXDistance;
         }
-        this.updateMetadataMatrix();
+        this.updateMetadataArray();
+        System.out.println("Total colored pixels: "+this.totalColoredPixels+"\nTotal white pixels: "+this.totalWhitePixels);
     }
     
-    public void addImageMetadata(ArrayList<Integer[]> pPixelValuesMatrix){
-        int pixelMatrixSize = pPixelValuesMatrix.size();
-        for(int matrixRows = 0; matrixRows < pixelMatrixSize; matrixRows++){
-            this.imageMetadataMatrix.add(pPixelValuesMatrix.get(matrixRows));
+    public void addImageMetadata(ArrayList<PixelData> pPixelValuesArray){
+        int pixelArraySize = pPixelValuesArray.size();
+        for(int rows = 0; rows < pixelArraySize; rows++){
+            PixelData pixelValue = pPixelValuesArray.get(rows);
+            if(this.pixelMetadataArray.contains(pixelValue)){
+                pixelValue.setOccurrence(pixelValue.getOccurrence()+1);
+            }
+            else{
+                this.pixelMetadataArray.add(pPixelValuesArray.get(0));
+            }
+            
         }
     }
     
-    public void updateMetadataMatrix(){ 
-        ArrayList<Integer[]> newMetadataMatrix = new ArrayList<>();
-        for(int rows = 0; rows < this.imageMetadataMatrix.size(); rows++){
-            Integer[] element = this.imageMetadataMatrix.get(rows);
-            if(!(newMetadataMatrix.contains(element))){
-                newMetadataMatrix.add(element);
-                //sets occurrence to 1
-                newMetadataMatrix.get(rows)[4] = 1;
+    public void updateMetadataArray(){ 
+        ArrayList<PixelData> newMetadataArray = new ArrayList<>();
+        for(int rows = 0; rows < this.pixelMetadataArray.size(); rows++){
+            PixelData pixel = this.pixelMetadataArray.get(rows);
+            if(!(newMetadataArray.contains(pixel))){
+                newMetadataArray.add(pixel);
             }
             else{
                 //adds 1 to occurrence
-                newMetadataMatrix.get(rows)[4] += 1;
+                int elementIndex = newMetadataArray.indexOf(pixel);
+                int elementOccurrence = newMetadataArray.get(elementIndex).getOccurrence()+1;
+                newMetadataArray.get(elementIndex).setOccurrence(elementOccurrence);
             }
         }
-        this.imageMetadataMatrix = newMetadataMatrix;
+        this.pixelMetadataArray = newMetadataArray;
     } 
     
     public void setupImage(){
@@ -101,14 +128,14 @@ public class CaseImage {
         this.sectionYDistance = this.height/this.totalCoordDivisions;
     }
     
-    public void printMatrix(ArrayList<Integer[]> pMatrix){
-        System.out.println("Pixel values:\nAlpha|Red|Green|Blue|Occurence| ");
-        for(int rows = 0; rows < pMatrix.size(); rows++){
-            for(int columns = 0; columns < pMatrix.get(rows).length; columns++){
-                System.out.println(pMatrix.get(rows)[columns] + "\t|");
-                System.out.println("fuck");
-            }
-            System.out.println();
+    public void printMatrix(ArrayList<PixelData> pArray){
+        System.out.println("Pixel values:\nRed | Green | Blue | Occurence| ");
+        for(int rows = 0; rows < pArray.size(); rows++){
+            int redValue = pArray.get(rows).getRedValue();
+            int greenValue = pArray.get(rows).getGreenValue();
+            int blueValue = pArray.get(rows).getBlueValue();
+            int occurrenceValue = pArray.get(rows).getOccurrence();
+            System.out.println(redValue+"  \t "+greenValue+"\t "+blueValue+"\t  "+occurrenceValue);
         }
     }
     
@@ -150,5 +177,13 @@ public class CaseImage {
 
     public void setImageMetadataMatrix(ArrayList<Integer[]> imageMetadataMatrix) {
         this.imageMetadataMatrix = imageMetadataMatrix;
+    }
+
+    public ArrayList<PixelData> getPixelMetadataArray() {
+        return pixelMetadataArray;
+    }
+
+    public void setPixelMetadataArray(ArrayList<PixelData> pixelMetadataArray) {
+        this.pixelMetadataArray = pixelMetadataArray;
     }
 }

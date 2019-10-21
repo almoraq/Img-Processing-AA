@@ -54,6 +54,7 @@ public class CaseImage {
             //System.out.println("Miny for row "+imageRows+": "+minY);
             for(int imageColumns = 0; imageColumns < subsections; imageColumns++){
                 if(minY <= (this.height-this.sectionYDistance) && minX <= (this.width-this.sectionXDistance) && maxX < this.width+1){
+
                     System.out.println("Testing in coordinates:\n x  ,  y\n"+minX+" , "+minY+"\n"+maxX+" , "+maxY);
                     ImageSection currSection = new ImageSection(minX, minY, maxX, maxY, this.targetTests, this.image, this.imageCopy);
                     
@@ -65,6 +66,7 @@ public class CaseImage {
                     maxX += this.sectionXDistance;
                     currSection.anchor[0]+=this.sectionXDistance;
                     currSection.anchor[1]+=this.sectionYDistance;
+
                 }
             }
             minY += this.sectionYDistance;

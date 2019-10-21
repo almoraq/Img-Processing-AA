@@ -69,8 +69,10 @@ public class ImageSection {
                 //System.out.println("Selected y: "+randomNum);
             }
             int pixelY = Math.abs(randomNum);
+
             //int pixelY = Math.abs(randomNum)+minY;
             //System.out.println("Testing pixel x,y:" +pixelX+","+pixelY);
+
             //Obtaining and saving the RGB values of the tested pixels. Values are stored inside the matrix
             //If pixel is white, values are not stored.
             //this.fullImageCopy.setRGB(pixelX, pixelY, 000000);
@@ -100,7 +102,6 @@ public class ImageSection {
             if(this.testingRange>this.xRange/5){
                 this.testingRange-=3;
             }
-            
             //Pixel is not white, the values are added to the class matrix
             //Check if values are already in the matrix. If they are, occurrence is increased
 
@@ -124,6 +125,7 @@ public class ImageSection {
             }
             
             //System.out.println("White pixel found.");
+
         }
         
     }

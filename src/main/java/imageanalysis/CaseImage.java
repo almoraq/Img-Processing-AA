@@ -20,10 +20,11 @@ public class CaseImage {
     BufferedImage imageCopy;
     String inputFile;
     int width, height;
-    int targetTests = 512;
+    int targetTests = 52;
     int totalCoordDivisions;
     ArrayList<PixelData> pixelMetadataArray = new ArrayList<>();
-    ArrayList<Integer[]> imageMetadataMatrix = new ArrayList<>();
+    ArrayList<ImageSection> imageSectionsArray = new ArrayList<>();
+    //ArrayList<Integer[]> imageMetadataMatrix = new ArrayList<>();
     int totalSections;
     int sectionXDistance;
     int sectionYDistance;
@@ -40,7 +41,7 @@ public class CaseImage {
         System.out.println("Target tests: "+this.targetTests);
     }
 
-    public void performTests(){
+    public void performInitialTests(){
         this.setupImage();
         System.out.println("Image setup finalized.");
         int minX = 0;
@@ -54,11 +55,11 @@ public class CaseImage {
             //System.out.println("Miny for row "+imageRows+": "+minY);
             for(int imageColumns = 0; imageColumns < subsections; imageColumns++){
                 if(minY <= (this.height-this.sectionYDistance) && minX <= (this.width-this.sectionXDistance) && maxX < this.width+1){
-
                     System.out.println("Testing in coordinates:\n x  ,  y\n"+minX+" , "+minY+"\n"+maxX+" , "+maxY);
                     ImageSection currSection = new ImageSection(minX, minY, maxX, maxY, this.targetTests, this.image, this.imageCopy);
                     
                     currSection.testPixelsArea();
+                    this.imageSectionsArray.add(currSection);
                     this.addImageMetadata(currSection.getPixelValuesArray());
                     this.totalColoredPixels+=currSection.getColoredPixels();
                     this.totalWhitePixels+=currSection.getWhitePixels();
@@ -66,16 +67,31 @@ public class CaseImage {
                     maxX += this.sectionXDistance;
                     currSection.anchor[0]+=this.sectionXDistance;
                     currSection.anchor[1]+=this.sectionYDistance;
-
                 }
             }
             minY += this.sectionYDistance;
             maxY += this.sectionYDistance;
             minX = 0;
             maxX = minX + this.sectionXDistance;
+            
         }
         this.updateMetadataArray();
         System.out.println("Total colored pixels: "+this.totalColoredPixels+"\nTotal white pixels: "+this.totalWhitePixels);
+    }
+    
+    
+    public void performAditionalTests(){
+        
+    }
+    
+    public void rearrangeSectionsArray(){
+        int totalSections = this.totalSections*10;
+        ArrayList<ImageSection> sectionsArrayCopy = this.imageSectionsArray;
+        //Maybe sort the elements from lowest to highest pixelDistribution values??
+        for(int sectionsAdded=0; sectionsAdded < sectionsArrayCopy.size(); sectionsAdded++){
+            //Add sections in proportion to their pixelDistribution value. 
+            //The higher the value the more elements of this section are added.
+        }
     }
     
     public void addImageMetadata(ArrayList<PixelData> pPixelValuesArray){
@@ -173,13 +189,6 @@ public class CaseImage {
         this.height = height;
     }
     
-    public ArrayList<Integer[]> getImageMetadataMatrix() {
-        return imageMetadataMatrix;
-    }
-
-    public void setImageMetadataMatrix(ArrayList<Integer[]> imageMetadataMatrix) {
-        this.imageMetadataMatrix = imageMetadataMatrix;
-    }
 
     public ArrayList<PixelData> getPixelMetadataArray() {
         return pixelMetadataArray;

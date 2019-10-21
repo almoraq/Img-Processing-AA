@@ -17,7 +17,7 @@ public class main {
         String inputFile = "Images/guacamaya.jpeg";
         int coordDivisions = 4;
         CaseImage testedImage = new CaseImage(inputFile, coordDivisions);
-        testedImage.performTests();
+        testedImage.performInitialTests();
         //testedImage.setImageMetadataMatrix(imageMetadataMatrix);
         testedImage.printMatrix(testedImage.getPixelMetadataArray());
     }

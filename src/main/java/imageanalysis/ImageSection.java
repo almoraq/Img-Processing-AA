@@ -24,7 +24,7 @@ public class ImageSection {
     int whitePixels = 0;
     int coloredPixels = 0;
     int totalPixels = 0;
-    int pixelDistribution = 100;
+    int pixelDistribution = 0;
     int xRange;
     int yRange;
     int consecutiveWhitePixels = 0;
@@ -244,5 +244,13 @@ public class ImageSection {
 
     public void setIsWhite(boolean isWhite) {
         this.isWhite = isWhite;
+    }
+
+    public int getPixelDistribution() {
+        return pixelDistribution;
+    }
+
+    public void setPixelDistribution(int pixelDistribution) {
+        this.pixelDistribution = pixelDistribution;
     }
 }

@@ -18,7 +18,12 @@ public class main {
         int coordDivisions = 4;
         CaseImage testedImage = new CaseImage(inputFile, coordDivisions);
         testedImage.performInitialTests();
+        for(int i=0; i<300; i++){
+            testedImage.performAditionalTests();
+        }
+        
         //testedImage.setImageMetadataMatrix(imageMetadataMatrix);
+        System.out.println("Colored pixels tested in image: "+testedImage.getTotalColoredPixels()+"\tWhite pixels tested: "+testedImage.getTotalWhitePixels());
         testedImage.printMatrix(testedImage.getPixelMetadataArray());
     }
 }

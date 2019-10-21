@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 import javax.imageio.ImageIO;
 
 /**
@@ -24,6 +25,7 @@ public class CaseImage {
     int totalCoordDivisions;
     ArrayList<PixelData> pixelMetadataArray = new ArrayList<>();
     ArrayList<ImageSection> imageSectionsArray = new ArrayList<>();
+    ArrayList<ImageSection> entireSectionsArray = new ArrayList<>();
     //ArrayList<Integer[]> imageMetadataMatrix = new ArrayList<>();
     int totalSections;
     int sectionXDistance;
@@ -77,20 +79,64 @@ public class CaseImage {
         }
         this.updateMetadataArray();
         System.out.println("Total colored pixels: "+this.totalColoredPixels+"\nTotal white pixels: "+this.totalWhitePixels);
+        this.sectionsArraySetup();
     }
     
     
     public void performAditionalTests(){
+        //Get random element from the big sections array
+        //Perform tests on that area, using that areas's coordinates as min and max xy
+        //Redistribute the big sections array to accomodate new section pixelDistribution
+        int randomNum = ThreadLocalRandom.current().nextInt(0, this.entireSectionsArray.size());
+        ImageSection currSection = this.entireSectionsArray.get(randomNum);
+        int minX = currSection.getMinX();
+        int maxX = currSection.getMaxX();
+        int minY = currSection.getMinY();
+        int maxY = currSection.getMaxY();
+        System.out.println("Testing in coordinates:\n x  ,  y\n"+minX+" , "+minY+"\n"+maxX+" , "+maxY);
+
+        currSection.testPixelsArea();
+        //this.imageSectionsArray.add(currSection);
+        this.addImageMetadata(currSection.getPixelValuesArray());
+        this.totalColoredPixels+=currSection.getColoredPixels();
+        this.totalWhitePixels+=currSection.getWhitePixels();
+            
         
+        this.updateMetadataArray();
+        //System.out.println("Total colored pixels: "+this.totalColoredPixels+"\nTotal white pixels: "+this.totalWhitePixels);
+        //this.sectionsArraySetup();
+        this.rearrangeSectionsArray();
+    }
+    
+    public void sectionsArraySetup(){
+        for(int sectionsAdded = 0; sectionsAdded < this.totalSections; sectionsAdded++){
+            int counter = 0;
+            while(counter < 10){
+                this.entireSectionsArray.add(this.imageSectionsArray.get(sectionsAdded));
+                counter += 1;
+            }
+        }
     }
     
     public void rearrangeSectionsArray(){
-        int totalSections = this.totalSections*10;
+        int totalAdditions = this.totalSections*10;
         ArrayList<ImageSection> sectionsArrayCopy = this.imageSectionsArray;
         //Maybe sort the elements from lowest to highest pixelDistribution values??
         for(int sectionsAdded=0; sectionsAdded < sectionsArrayCopy.size(); sectionsAdded++){
             //Add sections in proportion to their pixelDistribution value. 
             //The higher the value the more elements of this section are added.
+            this.entireSectionsArray.add(this.imageSectionsArray.get(sectionsAdded));
+            int sectionPixelDis = this.imageSectionsArray.get(sectionsAdded).getPixelDistribution();
+            totalAdditions-=1;
+            while(sectionPixelDis-3>0){
+                this.entireSectionsArray.add(this.imageSectionsArray.get(sectionsAdded));
+                sectionPixelDis-=3;
+                totalAdditions-=1;
+            }
+        }
+        for(int additionsLeft = 0; additionsLeft < totalAdditions; additionsLeft++){
+            int randomNum = ThreadLocalRandom.current().nextInt(0, this.imageSectionsArray.size());
+            this.entireSectionsArray.add(this.imageSectionsArray.get(randomNum));
         }
     }
     
@@ -196,5 +242,21 @@ public class CaseImage {
 
     public void setPixelMetadataArray(ArrayList<PixelData> pixelMetadataArray) {
         this.pixelMetadataArray = pixelMetadataArray;
+    }
+
+    public int getTotalColoredPixels() {
+        return totalColoredPixels;
+    }
+
+    public void setTotalColoredPixels(int totalColoredPixels) {
+        this.totalColoredPixels = totalColoredPixels;
+    }
+
+    public int getTotalWhitePixels() {
+        return totalWhitePixels;
+    }
+
+    public void setTotalWhitePixels(int totalWhitePixels) {
+        this.totalWhitePixels = totalWhitePixels;
     }
 }

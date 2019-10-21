@@ -25,6 +25,9 @@ public class ImageSection {
     int coloredPixels = 0;
     int xRange;
     int yRange;
+    int consecutiveWhitePixels = 0;
+    int consecutiveWhitePixelsLimit = 6;
+    int testingRange;
     int totalTests;
     int minTests = totalTests / 4;
     boolean isWhite = false;
@@ -43,28 +46,30 @@ public class ImageSection {
     }
     public void testPixelsArea(){
         //System.out.println("Testing pixel area...");
-        this.anchor[0] = this.xRange/2+minX;//X coordinate of the anchor
-        this.anchor[1] = this.yRange/2+minY;
+        this.anchor[0] = this.xRange/2+this.minX;//X coordinate of the anchor
+        this.anchor[1] = this.yRange/2+this.minY;
+        this.testingRange = this.xRange/2;
         //System.out.println("Anchor x,y: "+this.anchor[0]+","+this.anchor[1]);
         for(int pixelsTested = 0; pixelsTested < this.totalTests; pixelsTested++){
             //Obtaining random coordinates for testing the pixel, limited by the max and min x,y of the section that is tested
             //Anchor values are used to steer the random elements into the colored pixels of the section
             //X and Y values picked are limited by the size of the section, so no values outside of them can be used
-            int randomNum = ThreadLocalRandom.current().nextInt(-(this.xRange/2), this.xRange/2);
+            int randomNum = ThreadLocalRandom.current().nextInt(this.anchor[0]-this.testingRange, this.anchor[0]+(this.testingRange));
+            //int randomNum = random.nextInt(this.testingRange + this.testingRange) - this.testingRange; 
             while(!(this.anchor[0]+randomNum+minX < this.maxX || this.anchor[0]+randomNum+minX > this.minX)){
-                randomNum = ThreadLocalRandom.current().nextInt(-(this.xRange/2), this.xRange/2);
-                /*System.out.println("Number selected: "+randomNum+".\t"+"MaxX: "+this.maxX+".\t"+"MinX: "+this.minX);
-                System.out.println("MaxX > number??: "+(randomNum<this.maxX));
-                System.out.println("MinX < number??: "+(randomNum>this.minX));
-                */
+                randomNum = ThreadLocalRandom.current().nextInt(this.anchor[0]-this.testingRange, this.anchor[0]+(this.testingRange));
+                //randomNum = ThreadLocalRandom.current().nextInt(1-(this.testingRange), testingRange);
             }
-            int pixelX = Math.abs(randomNum)+minX;
+            //int pixelX = Math.abs(randomNum)+minX;
+            int pixelX = Math.abs(randomNum);
             while(!(this.anchor[1]+randomNum < this.maxY || this.anchor[1]+randomNum > this.minY)){
-                randomNum = ThreadLocalRandom.current().nextInt(-(this.yRange/2), this.yRange/2);
+                randomNum = ThreadLocalRandom.current().nextInt(this.anchor[1]-this.testingRange, this.anchor[1]+(this.testingRange));
+                //randomNum = ThreadLocalRandom.current().nextInt(1-(this.testingRange), testingRange);
                 //randomNum = ThreadLocalRandom.current().nextInt(this.anchor[1]-this.yRange/2, this.anchor[1]+(this.yRange/2) + 1);
                 //System.out.println("Selected y: "+randomNum);
             }
-            int pixelY = Math.abs(randomNum)+minY;
+            int pixelY = Math.abs(randomNum);
+            //int pixelY = Math.abs(randomNum)+minY;
             //System.out.println("Testing pixel x,y:" +pixelX+","+pixelY);
             //Obtaining and saving the RGB values of the tested pixels. Values are stored inside the matrix
             //If pixel is white, values are not stored.
@@ -90,6 +95,11 @@ public class ImageSection {
         //ARBG values of the pixel are "extracted" from the pixel value for easier handling
         if(!currPixel.checkIfWhite()){
             System.out.println("Colored pixel values: "+currPixel.getAlphaValue()+", "+currPixel.getRedValue()+", "+currPixel.getGreenValue()+", "+currPixel.getBlueValue());
+            this.anchor[0] = pX;
+            this.anchor[1] = pY;
+            if(this.testingRange>this.xRange/5){
+                this.testingRange-=3;
+            }
             
             //Pixel is not white, the values are added to the class matrix
             //Check if values are already in the matrix. If they are, occurrence is increased
@@ -106,6 +116,13 @@ public class ImageSection {
         }
         else{
             this.whitePixels += 1;
+            this.consecutiveWhitePixels += 1;
+            if(this.consecutiveWhitePixels>=this.consecutiveWhitePixelsLimit){
+                this.anchor[0] = this.xRange/2+this.minX;//X coordinate of the anchor
+                this.anchor[1] = this.yRange/2+this.minY;
+                this.testingRange = this.xRange/2;
+            }
+            
             //System.out.println("White pixel found.");
         }
         

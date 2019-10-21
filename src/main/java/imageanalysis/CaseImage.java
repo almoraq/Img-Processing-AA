@@ -20,7 +20,7 @@ public class CaseImage {
     BufferedImage imageCopy;
     String inputFile;
     int width, height;
-    int targetTests = 60;
+    int targetTests = 512;
     int totalCoordDivisions;
     ArrayList<PixelData> pixelMetadataArray = new ArrayList<>();
     ArrayList<Integer[]> imageMetadataMatrix = new ArrayList<>();
@@ -129,7 +129,7 @@ public class CaseImage {
     }
     
     public void printMatrix(ArrayList<PixelData> pArray){
-        System.out.println("Pixel values:\nRed | Green | Blue | Occurence| ");
+        System.out.println("Pixel values:\nRed | Green | Blue | Occurrence | ");
         for(int rows = 0; rows < pArray.size(); rows++){
             int redValue = pArray.get(rows).getRedValue();
             int greenValue = pArray.get(rows).getGreenValue();

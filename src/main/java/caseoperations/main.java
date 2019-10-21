@@ -14,11 +14,11 @@ import java.util.ArrayList;
  */
 public class main {
     public static void main(String[] args) throws Exception{
-        String inputFile = "Images/squirtle.jpg";
+        String inputFile = "Images/guacamaya.jpeg";
         int coordDivisions = 4;
         CaseImage testedImage = new CaseImage(inputFile, coordDivisions);
         testedImage.performTests();
         //testedImage.setImageMetadataMatrix(imageMetadataMatrix);
-        testedImage.printMatrix(testedImage.getImageMetadataMatrix());
+        testedImage.printMatrix(testedImage.getPixelMetadataArray());
     }
 }

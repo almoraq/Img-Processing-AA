@@ -16,15 +16,18 @@ import java.util.concurrent.ThreadLocalRandom;
 public class ImageSection {
     BufferedImage imageSample;
     BufferedImage fullImageCopy;
-    Integer[] pixelValuesArray = {0,0,0,0,0};
+    ArrayList<PixelData> pixelsArray = new ArrayList<>();
     ArrayList<Integer[]> sectionValuesMatrix = new ArrayList<>();
     int minX, minY;
     int maxX, maxY;
-    Integer[] anchor;
+    Integer[] anchor = new Integer[2];
     int whitePixels = 0;
     int coloredPixels = 0;
-    int xRange = (maxX-minX);
-    int yRange = (maxY-minY);
+    int xRange;
+    int yRange;
+    int consecutiveWhitePixels = 0;
+    int consecutiveWhitePixelsLimit = 6;
+    int testingRange;
     int totalTests;
     int minTests = totalTests / 4;
     boolean isWhite = false;
@@ -38,34 +41,45 @@ public class ImageSection {
         this.totalTests = pTotalTests;
         this.imageSample = pImageSample;
         this.fullImageCopy = pFullImageCopy;
+        this.xRange = (this.maxX-this.minX);
+        this.yRange = (this.maxY-this.minY);
     }
     public void testPixelsArea(){
-        System.out.println("Testing pixel area...");
-        this.anchor = new Integer[2];
-        this.anchor[0] = this.xRange/2;//X coordinate of the anchor
-        this.anchor[1] = this.yRange/2;
-        
+        //System.out.println("Testing pixel area...");
+        this.anchor[0] = this.xRange/2+this.minX;//X coordinate of the anchor
+        this.anchor[1] = this.yRange/2+this.minY;
+        this.testingRange = this.xRange/2;
+        //System.out.println("Anchor x,y: "+this.anchor[0]+","+this.anchor[1]);
         for(int pixelsTested = 0; pixelsTested < this.totalTests; pixelsTested++){
             //Obtaining random coordinates for testing the pixel, limited by the max and min x,y of the section that is tested
             //Anchor values are used to steer the random elements into the colored pixels of the section
             //X and Y values picked are limited by the size of the section, so no values outside of them can be used
-            int randomNum = ThreadLocalRandom.current().nextInt(this.anchor[0]-this.xRange, this.anchor[0]+this.xRange + 1);
-            while(this.anchor[0]+randomNum > this.maxX || this.anchor[0]+randomNum < this.minX){
-                randomNum = ThreadLocalRandom.current().nextInt(this.anchor[0]-this.xRange, this.anchor[0]+this.xRange + 1);
+            int randomNum = ThreadLocalRandom.current().nextInt(this.anchor[0]-this.testingRange, this.anchor[0]+(this.testingRange));
+            //int randomNum = random.nextInt(this.testingRange + this.testingRange) - this.testingRange; 
+            while(!(this.anchor[0]+randomNum+minX < this.maxX || this.anchor[0]+randomNum+minX > this.minX)){
+                randomNum = ThreadLocalRandom.current().nextInt(this.anchor[0]-this.testingRange, this.anchor[0]+(this.testingRange));
+                //randomNum = ThreadLocalRandom.current().nextInt(1-(this.testingRange), testingRange);
             }
+            //int pixelX = Math.abs(randomNum)+minX;
             int pixelX = Math.abs(randomNum);
-            while(this.anchor[1]+randomNum > this.maxY || this.anchor[1]+randomNum < this.minY){
-                randomNum = ThreadLocalRandom.current().nextInt(this.anchor[1]-this.yRange, this.anchor[1]+this.yRange + 1);
+            while(!(this.anchor[1]+randomNum < this.maxY || this.anchor[1]+randomNum > this.minY)){
+                randomNum = ThreadLocalRandom.current().nextInt(this.anchor[1]-this.testingRange, this.anchor[1]+(this.testingRange));
+                //randomNum = ThreadLocalRandom.current().nextInt(1-(this.testingRange), testingRange);
+                //randomNum = ThreadLocalRandom.current().nextInt(this.anchor[1]-this.yRange/2, this.anchor[1]+(this.yRange/2) + 1);
+                //System.out.println("Selected y: "+randomNum);
             }
             int pixelY = Math.abs(randomNum);
-            System.out.println("Testing pixel x,y:" +pixelX+","+pixelY);
+
+            //int pixelY = Math.abs(randomNum)+minY;
+            //System.out.println("Testing pixel x,y:" +pixelX+","+pixelY);
+
             //Obtaining and saving the RGB values of the tested pixels. Values are stored inside the matrix
             //If pixel is white, values are not stored.
-            this.fullImageCopy.setRGB(pixelX, pixelY, 000000);
+            //this.fullImageCopy.setRGB(pixelX, pixelY, 000000);
             this.obtainPixelValues(pixelX, pixelY);
             
             //Extra condition to stop section analysis if all pixels have been white after a certain amount of tests
-            if(this.whitePixels == pixelsTested && this.minTests == pixelsTested){
+            if(this.whitePixels == pixelsTested && pixelsTested > this.totalTests/4){
                 this.isWhite = true;
                 break;
             }
@@ -76,42 +90,44 @@ public class ImageSection {
     public void obtainPixelValues(int pX, int pY){
         //Obtains and evaluates the pixel values
         //If a pixel is white, it doesnt add it to the matrix
-        int pixelValue = this.imageSample.getRGB(pX, pY);//obtaining the ARGB value, stored as a single number
         
+        int pixelValue = this.imageSample.getRGB(pX, pY);//obtaining the ARGB value, stored as a single number
+        PixelData currPixel = new PixelData(pixelValue);
+        currPixel.roundARGBValues();
         //ARBG values of the pixel are "extracted" from the pixel value for easier handling
-        int alphaValue = (pixelValue>>24) & 0xff;
-        int redValue = (pixelValue>>16) & 0xff;
-        int greenValue = (pixelValue>>8) & 0xff;
-        int blueValue = (pixelValue) & 0xff;
-        if(!(alphaValue == 255 && redValue == 255 && greenValue == 255 && blueValue == 255)){
-            System.out.println("Colored pixel values: "+alphaValue+", "+redValue+", "+greenValue+", "+blueValue);
+        if(!currPixel.checkIfWhite()){
+            System.out.println("Colored pixel values: "+currPixel.getAlphaValue()+", "+currPixel.getRedValue()+", "+currPixel.getGreenValue()+", "+currPixel.getBlueValue());
+            this.anchor[0] = pX;
+            this.anchor[1] = pY;
+            if(this.testingRange>this.xRange/5){
+                this.testingRange-=3;
+            }
             //Pixel is not white, the values are added to the class matrix
             //Check if values are already in the matrix. If they are, occurrence is increased
-            this.pixelValuesArray[0] = alphaValue;
-            this.pixelValuesArray[1] = redValue;
-            this.pixelValuesArray[2] = greenValue;
-            this.pixelValuesArray[3] = blueValue;
-            if(this.checkPixelValuesMatrix()){
-                this.sectionValuesMatrix.add(this.pixelValuesArray);
+
+            if(this.pixelsArray.contains(currPixel)){
+                currPixel.setOccurrence(currPixel.getOccurrence()+1);
             }
             else{
-                
-                //adding 1 to the occurrence of this color
-                this.pixelValuesArray[4] +=1;
+                this.pixelsArray.add(currPixel);
             }
             this.coloredPixels += 1;
-            this.anchor[0] -= 2;
-            this.anchor[1] -= 2;
+            /*this.anchor[0] -= 2;
+            this.anchor[1] -= 2;*/
         }
         else{
             this.whitePixels += 1;
-            System.out.println("White pixel found.");
+            this.consecutiveWhitePixels += 1;
+            if(this.consecutiveWhitePixels>=this.consecutiveWhitePixelsLimit){
+                this.anchor[0] = this.xRange/2+this.minX;//X coordinate of the anchor
+                this.anchor[1] = this.yRange/2+this.minY;
+                this.testingRange = this.xRange/2;
+            }
+            
+            //System.out.println("White pixel found.");
+
         }
         
-    }
-    
-    public boolean checkPixelValuesMatrix(){
-        return this.sectionValuesMatrix.contains(this.pixelValuesArray);
     }
     
     public BufferedImage getImageSample() {
@@ -122,12 +138,12 @@ public class ImageSection {
         this.imageSample = imageSample;
     }
 
-    public Integer[] getPixelValuesArray() {
-        return pixelValuesArray;
+    public ArrayList<PixelData> getPixelValuesArray() {
+        return pixelsArray;
     }
 
-    public void setPixelValuesArray(Integer[] pixelValuesArray) {
-        this.pixelValuesArray = pixelValuesArray;
+    public void setPixelValuesArray(ArrayList<PixelData> pixelValuesArray) {
+        this.pixelsArray = pixelValuesArray;
     }
 
     public ArrayList<Integer[]> getPixelValuesMatrix() {

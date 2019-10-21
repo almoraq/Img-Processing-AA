@@ -23,6 +23,8 @@ public class ImageSection {
     Integer[] anchor = new Integer[2];
     int whitePixels = 0;
     int coloredPixels = 0;
+    int totalPixels = 0;
+    int pixelDistribution = 100;
     int xRange;
     int yRange;
     int consecutiveWhitePixels = 0;
@@ -50,7 +52,7 @@ public class ImageSection {
         this.anchor[1] = this.yRange/2+this.minY;
         this.testingRange = this.xRange/2;
         //System.out.println("Anchor x,y: "+this.anchor[0]+","+this.anchor[1]);
-        for(int pixelsTested = 0; pixelsTested < this.totalTests; pixelsTested++){
+        for(int pixelsTested = 0; pixelsTested < this.totalTests; ++pixelsTested){
             //Obtaining random coordinates for testing the pixel, limited by the max and min x,y of the section that is tested
             //Anchor values are used to steer the random elements into the colored pixels of the section
             //X and Y values picked are limited by the size of the section, so no values outside of them can be used
@@ -69,15 +71,17 @@ public class ImageSection {
                 //System.out.println("Selected y: "+randomNum);
             }
             int pixelY = Math.abs(randomNum);
-
             //int pixelY = Math.abs(randomNum)+minY;
             //System.out.println("Testing pixel x,y:" +pixelX+","+pixelY);
-
             //Obtaining and saving the RGB values of the tested pixels. Values are stored inside the matrix
             //If pixel is white, values are not stored.
             //this.fullImageCopy.setRGB(pixelX, pixelY, 000000);
             this.obtainPixelValues(pixelX, pixelY);
-            
+            this.totalPixels = this.coloredPixels+this.whitePixels;
+            this.pixelDistribution = (this.coloredPixels*100)/(this.totalPixels);
+            System.out.println("Colored pixels: "+this.coloredPixels+"\tWhite pixels: "+this.whitePixels+"\tTotal: "+this.totalPixels);
+            System.out.println("Pixel distribution: colored = "+pixelDistribution);
+            //System.out.println("Colored pixels: "+this.coloredPixels+"\tWhite pixels: "+this.whitePixels);
             //Extra condition to stop section analysis if all pixels have been white after a certain amount of tests
             if(this.whitePixels == pixelsTested && pixelsTested > this.totalTests/4){
                 this.isWhite = true;
@@ -96,12 +100,13 @@ public class ImageSection {
         currPixel.roundARGBValues();
         //ARBG values of the pixel are "extracted" from the pixel value for easier handling
         if(!currPixel.checkIfWhite()){
-            System.out.println("Colored pixel values: "+currPixel.getAlphaValue()+", "+currPixel.getRedValue()+", "+currPixel.getGreenValue()+", "+currPixel.getBlueValue());
+            //System.out.println("Colored pixel values: "+currPixel.getAlphaValue()+", "+currPixel.getRedValue()+", "+currPixel.getGreenValue()+", "+currPixel.getBlueValue());
             this.anchor[0] = pX;
             this.anchor[1] = pY;
             if(this.testingRange>this.xRange/5){
                 this.testingRange-=3;
             }
+            
             //Pixel is not white, the values are added to the class matrix
             //Check if values are already in the matrix. If they are, occurrence is increased
 
@@ -125,7 +130,6 @@ public class ImageSection {
             }
             
             //System.out.println("White pixel found.");
-
         }
         
     }
